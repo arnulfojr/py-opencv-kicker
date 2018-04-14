@@ -62,7 +62,7 @@ while True:
     ok, bbox = tracker.update(frame)
 
     # Calculate Frames per second (FPS)
-    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
+    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
     # Draw bounding box
     if ok:

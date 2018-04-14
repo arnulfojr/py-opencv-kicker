@@ -14,14 +14,15 @@ counter = 0
 
 while True:
     # Read first frame.
-    ok, image = video.read()
+    ok, output = video.read()
     counter = counter + 1
     if not ok:
         print('Cannot read video file')
         sys.exit()
+    # start timer
+    timer = cv2.getTickCount()
 
-    output = image
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
     blur = cv2.bilateralFilter(gray, 5, 75, 75)
 
     # detect circles in the image
@@ -37,12 +38,17 @@ while True:
         # loop over the (x, y) coordinates and radius of the circles
         for (x, y, r) in circles:
             if r > 0:
+                print(x, y, r)
                 # draw the circle in the output image, then draw a rectangle
                 # corresponding to the center of the circle
-                cv2.circle(blur, (x, y), r, (0, 255, 0), 4)
-                cv2.rectangle(blur, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                cv2.circle(output, (x, y), r, (0, 255, 0), 4)
+                cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+    # Calculate Frames per second (FPS)
+    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+    # Display FPS on frame
+    cv2.putText(output, "FPS : " + str(int(fps)), (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 170, 50), 2)
     # show the output image
-    cv2.imshow("output", blur)
+    cv2.imshow("output", output)
 
     # Exit if ESC pressed
     k = cv2.waitKey(1) & 0xff
