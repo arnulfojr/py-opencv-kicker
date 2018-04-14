@@ -4,7 +4,7 @@ import sys
 import csv
 
 # Read video
-video = cv2.VideoCapture('game2.mov')
+video = cv2.VideoCapture('game.mov')
 
 # Exit if video not opened.
 if not video.isOpened():
@@ -13,8 +13,8 @@ if not video.isOpened():
 
 counter = 0
 
-with open('results.csv', 'x') as csv_file:
-    csv_writer = csv.writer(csv_file, delimiter=' ',
+with open('results2.csv', 'w') as csv_file:
+    csv_writer = csv.writer(csv_file, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     while True:
         # Read first frame.
@@ -28,10 +28,15 @@ with open('results.csv', 'x') as csv_file:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.bilateralFilter(gray, 7, 75, 75)
 
+        ret, thresh = cv2.threshold(gray, 127, 255, 0)
+        image, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        contours = [cont for cont in contours if cv2.contourArea(cont) > 100]
+        output = cv2.drawContours(output, contours, 0, (0, 255, 0), 3)
+
         # detect circles in the image
         # 24-30 min-max
         circles = cv2.HoughCircles(blur, cv2.HOUGH_GRADIENT, 1, 200,
-                                   param1=50, param2=20, minRadius=12, maxRadius=18)
+                                   param1=50, param2=20, minRadius=20, maxRadius=25)
 
         # ensure at least some circles were found
         if circles is not None:
@@ -43,12 +48,12 @@ with open('results.csv', 'x') as csv_file:
                 if r > 0:
                     # draw the circle in the output image, then draw a rectangle
                     # corresponding to the center of the circle
-                    cv2.circle(blur, (x, y), r, (0, 255, 0), 4)
+                    cv2.circle(output, (x, y), r, (0, 255, 0), 4)
                     print(counter, x, y, r)
                     csv_writer.writerow([counter, x, y, r])
-                    cv2.rectangle(blur, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                    cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
         # show the output image
-        cv2.imshow("output", blur)
+        cv2.imshow("output", output)
 
         # Exit if ESC pressed
         k = cv2.waitKey(1) & 0xff
