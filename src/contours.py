@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import imutils
 import cv2
+import sys
 import math
 
 # construct the argument parse and parse the arguments
@@ -17,15 +18,21 @@ args = vars(ap.parse_args())
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
-# greenLower = (0, 133, 188)
-greenLower = np.array([80, 150, 200])
-# greenUpper = (90, 233, 255)
-greenUpper = np.array([100, 255, 255])
+greenLower = np.array([145, 150, 200])
+greenUpper = np.array([165, 255, 255])
 pts = deque(maxlen=args["buffer"])
 
 # grab the current frame
+# Read video
+video = cv2.VideoCapture('game.mov')
 
-frame = cv2.imread('../../table.jpeg')
+# Exit if video not opened.
+if not video.isOpened():
+    print("Could not open video")
+    sys.exit()
+
+# Read first frame.
+ok, frame = video.read()
 
 # resize the frame, blur it, and convert it to the HSV
 # color space
@@ -60,7 +67,7 @@ if len(cnts) > 0:
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
         # only proceed if the radius meets a minimum size
-        if radius > 5 and radius < 10:
+        if 8 < radius < 15:
             # draw the circle and centroid on the frame,
             # then update the list of tracked points
             cv2.circle(frame, (int(x), int(y)), int(radius),
@@ -71,7 +78,7 @@ if len(cnts) > 0:
 # update the points queue
 pts.appendleft(center)
 # loop over the set of tracked points
-for i in xrange(1, len(pts)):
+for i in range(1, len(pts)):
     # if either of the tracked points are None, ignore
     # them
     if pts[i - 1] is None or pts[i] is None:
